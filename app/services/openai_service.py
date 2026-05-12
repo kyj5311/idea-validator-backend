@@ -47,11 +47,15 @@ class OpenAIAnalysisService:
             "messages": [
                 {
                     "role": "system",
-                    "content": "You generate structured idea analysis in JSON.",
+                    "content": (
+                        "You are a precise Korean startup idea analyst. "
+                        "Return only valid JSON and never drift away from the "
+                        "user's actual idea, keywords, or industry."
+                    ),
                 },
                 {"role": "user", "content": prompt},
             ],
-            "temperature": 0.4,
+            "temperature": 0.2,
             "response_format": {"type": "json_object"},
         }
 
