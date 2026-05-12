@@ -20,7 +20,6 @@ load_dotenv()
 
 OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions"
 
-
 class OpenAIAnalysisService:
     """Encapsulates OpenAI interaction for idea analysis."""
 
