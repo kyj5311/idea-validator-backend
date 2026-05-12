@@ -286,11 +286,22 @@ Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType
 
 ## 14) 인수인계 마무리 체크리스트
 
-1. `.env`에 실제 키가 없는지 확인 (`your_openai_api_key_here` 상태 유지)
-2. `.gitignore`에 `.env`, `.venv`가 포함되어 있는지 확인
-3. `README.md`, `HANDOFF.md`, `.env.example` 기준으로 실행/전달 자료 최종 점검
-4. `POST /analyze` 스모크 테스트 성공 로그 1회 확인
-5. 프론트팀/백엔드 후속 담당자에게 아래 템플릿으로 전달
+1. `.env`가 Git에 포함되지 않았는지 확인
+2. `.env.example`에는 실제 키가 아닌 예시값만 남아 있는지 확인
+3. `.gitignore`에 `.env`, `.venv`가 포함되어 있는지 확인
+4. `README.md`, `HANDOFF.md`, `.env.example` 기준으로 실행/전달 자료 최종 점검
+5. `POST /analyze` 스모크 테스트 성공 로그 1회 확인
+6. 응답에 고정 필드가 모두 포함되는지 확인
+   - `summary`
+   - `similar_cases`
+   - `target_users`
+   - `differentiation`
+   - `mvp`
+7. 프론트와 합의한 API 계약이 바뀌지 않았는지 확인
+   - Request: `{ "idea": "string" }`
+   - Response keys: `summary`, `similar_cases`, `target_users`, `differentiation`, `mvp`
+8. 후속 백엔드 담당자에게 9번 섹션의 GitHub 클론 후 테스트 절차와 10번 섹션의 자주 나는 에러 대응을 함께 안내
+9. 프론트팀/백엔드 후속 담당자에게 아래 템플릿으로 전달
 
 ### 프론트팀 전달 템플릿
 
@@ -300,6 +311,7 @@ Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType
 - Request: { "idea": "string" }
 - Response keys (고정): summary, similar_cases, target_users, differentiation, mvp
 - Error format: { "detail": "..." }
+- 테스트 주소(로컬): http://127.0.0.1:8000/analyze
 - 비고: 필드명 변경 시 사전 합의 필요
 ```
 
@@ -311,5 +323,7 @@ Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType
 - 상세 인수인계: HANDOFF.md
 - 환경변수 템플릿: .env.example (.env는 커밋 금지)
 - 현재 완료 범위: 아이디어 입력 -> AI 분석 -> JSON 반환
+- 로컬 재현 절차: HANDOFF.md 9번 섹션 참고
+- 자주 나는 에러 대응: HANDOFF.md 10번 섹션 참고
 - 우선 TODO: CORS 도메인 제한, 에러 규약 정리, 테스트 코드 추가
 ```
