@@ -265,13 +265,33 @@ Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType
 
 ---
 
-## 12) 다음 백엔드 담당자 우선 TODO
+## 12) 프론트 연동 및 안정화 TODO
 
-1. 프론트와 실제 연동 후 CORS `allow_origins`를 실제 도메인으로 제한
-2. 타임아웃/재시도 정책 정리 (OpenAI 요청 안정화)
-3. 에러 코드/메시지 규약 확정 (프론트 에러 UX와 맞춤)
-4. 테스트 코드 추가 (최소: `/analyze` 정상/실패 케이스)
-5. 운영 환경용 `.env` 관리 정책 정리 (비밀키 누출 방지)
+현재 MVP 백엔드 핵심 흐름은 구현되어 있으며, 아래 항목은 후속 백엔드 담당자가 프론트 연결 과정에서 진행하거나 운영 안정성을 위해 보강할 작업입니다.
+
+### 프론트 연동
+
+1. 프론트와 실제 연동 후 CORS `allow_origins`를 실제 프론트 도메인으로 제한
+2. 프론트 요청 방식과 백엔드 API 계약 최종 확인
+   - Endpoint: `POST /analyze`
+   - Request: `{ "idea": "string" }`
+   - Response keys: `summary`, `similar_cases`, `target_users`, `differentiation`, `mvp`
+3. 에러 코드/메시지 규약 확정
+   - 프론트에서 `400`, `422`, `500`, `502`를 어떻게 보여줄지 협의
+4. 프론트 화면에서 로딩/실패/재시도 UX가 필요한지 확인
+
+### 백엔드 안정화
+
+1. OpenAI 요청 타임아웃/재시도 정책 정리
+2. 테스트 코드 추가
+   - 최소: `/health`, `/analyze` 정상 케이스, 공백 입력 실패 케이스
+3. 운영 환경용 `.env` 관리 정책 정리
+   - 비밀키 누출 방지
+   - 배포 환경 변수 설정 방식 확인
+4. 에러 메시지 정제
+   - 개발용 상세 메시지와 사용자 노출 메시지 분리 검토
+5. 기본 로깅 추가 검토
+   - 요청 실패 원인 추적용 최소 로그
 
 ---
 
@@ -325,5 +345,6 @@ Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType
 - 현재 완료 범위: 아이디어 입력 -> AI 분석 -> JSON 반환
 - 로컬 재현 절차: HANDOFF.md 9번 섹션 참고
 - 자주 나는 에러 대응: HANDOFF.md 10번 섹션 참고
-- 우선 TODO: CORS 도메인 제한, 에러 규약 정리, 테스트 코드 추가
+- 프론트 연동 TODO: CORS 도메인 제한, API 계약 최종 확인, 에러 UX 협의
+- 백엔드 안정화 TODO: OpenAI 타임아웃/재시도 정리, 테스트 코드 추가, 운영 환경변수 관리
 ```
