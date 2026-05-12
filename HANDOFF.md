@@ -167,7 +167,95 @@ curl -X POST "http://127.0.0.1:8000/analyze" \
 
 ---
 
-## 9) 알려진 한계 / 리스크
+## 9) GitHub에서 받은 뒤 테스트하는 순서
+
+후속 백엔드 담당자가 저장소를 새로 받은 뒤에는 아래 순서로 확인하면 됩니다.
+
+1. 프로젝트 받기
+
+```powershell
+git clone https://github.com/kyj5311/idea-validator-backend.git
+cd idea-validator-backend
+```
+
+2. 가상환경 생성/활성화
+
+```powershell
+py -3.12 -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+`py` 명령이 없으면 아래 명령으로 시도합니다.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+3. 환경변수 파일 준비
+
+```powershell
+copy .env.example .env
+```
+
+`.env` 파일을 열어서 실제 키를 입력합니다.
+
+```env
+OPENAI_API_KEY=sk-본인키
+OPENAI_MODEL=gpt-4o-mini
+```
+
+4. 패키지 설치
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+5. 서버 실행
+
+```powershell
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+정상 실행 기준:
+
+```text
+Uvicorn running on http://127.0.0.1:8000
+Application startup complete
+```
+
+6. API 테스트
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType "application/json" -Body '{"idea":"바퀴가 3개인 자동차"}' | ConvertTo-Json -Depth 5
+```
+
+7. 성공 기준
+
+응답에 아래 필드가 모두 나오면 성공입니다.
+
+- `summary`
+- `similar_cases`
+- `target_users`
+- `differentiation`
+- `mvp`
+
+---
+
+## 10) 자주 나는 에러 빠른 대응
+
+| 증상 | 가능한 원인 | 대응 |
+| --- | --- | --- |
+| `401 invalid_api_key` | `.env`의 OpenAI API Key가 잘못됨 | 키가 실제 발급 키인지, 공백/따옴표가 섞이지 않았는지 확인 |
+| `429 insufficient_quota` | OpenAI 크레딧 또는 요금제 문제 | OpenAI 계정의 결제/사용량 상태 확인 |
+| `Could not connect to server` | uvicorn 서버가 실행되지 않았거나 종료됨 | 서버 실행 터미널에서 `uvicorn` 로그 확인 |
+| `OPENAI_API_KEY is not set` | `.env`가 없거나 키 이름이 틀림 | `.env.example`을 복사해 `.env` 생성 후 `OPENAI_API_KEY` 입력 |
+| `pip install` 실패 | MSYS2/MinGW Python 또는 지원되지 않는 Python 버전 사용 | python.org CPython 3.12/3.13으로 가상환경 재생성 |
+
+---
+
+## 11) 알려진 한계 / 리스크
 
 - **MSYS2/MinGW Python + 최신 마이너(예: 3.14)** 로는 `pydantic-core` 등 휠이 없어 `pip install`이 실패할 수 있음 → **python.org Windows CPython 3.12/3.13** 권장 (`README.md` (0)절 참고)
 - OpenAI 응답 품질은 입력 문장에 따라 편차가 있을 수 있음. 현재는 프롬프트에서 도메인 이탈과 placeholder 응답을 줄이도록 보강한 상태
@@ -177,7 +265,7 @@ curl -X POST "http://127.0.0.1:8000/analyze" \
 
 ---
 
-## 10) 다음 백엔드 담당자 우선 TODO
+## 12) 다음 백엔드 담당자 우선 TODO
 
 1. 프론트와 실제 연동 후 CORS `allow_origins`를 실제 도메인으로 제한
 2. 타임아웃/재시도 정책 정리 (OpenAI 요청 안정화)
@@ -187,7 +275,7 @@ curl -X POST "http://127.0.0.1:8000/analyze" \
 
 ---
 
-## 11) 변경 시 주의사항
+## 13) 변경 시 주의사항
 
 - MVP 목적상 구조를 단순하게 유지하는 것이 우선입니다.
 - 로그인/DB/JWT/Redis/RAG 등 범위 외 기능은 별도 합의 후 진행 권장.
@@ -196,7 +284,7 @@ curl -X POST "http://127.0.0.1:8000/analyze" \
 
 ---
 
-## 12) 인수인계 마무리 체크리스트
+## 14) 인수인계 마무리 체크리스트
 
 1. `.env`에 실제 키가 없는지 확인 (`your_openai_api_key_here` 상태 유지)
 2. `.gitignore`에 `.env`, `.venv`가 포함되어 있는지 확인
