@@ -91,6 +91,9 @@ uvicorn app.main:app --reload
 
 ### POST `/analyze`
 
+프론트 연동 기준 API 계약은 아래 구조로 고정합니다.  
+후속 작업 중에도 요청 필드와 응답 필드명은 변경하지 않는 것을 원칙으로 합니다.
+
 요청 예시:
 
 ```json
@@ -114,11 +117,28 @@ uvicorn app.main:app --reload
 }
 ```
 
+PowerShell 테스트 예시:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType "application/json" -Body '{"idea":"공모전 아이디어 검증 AI 서비스"}' | ConvertTo-Json -Depth 5
+```
+
+에러 응답은 FastAPI 기본 형식으로 반환됩니다.
+
+```json
+{
+  "detail": "에러 메시지"
+}
+```
+
 ## 4) 구현 포인트
 
 - FastAPI 기반 단일 핵심 엔드포인트(`/analyze`) 제공
 - OpenAI Chat Completions를 `httpx`로 호출 (일부 Python/MinGW 환경에서 `openai` 패키지의 Rust 의존성 빌드 실패를 피하기 위함)
 - OpenAI 응답을 JSON으로 강제하도록 프롬프트 + `response_format` 적용
+- 짧은 아이디어 입력에서도 입력 도메인을 벗어나지 않도록 프롬프트 보강
+- placeholder 응답(`아이디어 A`, `구체적인 설명 필요` 등)을 피하도록 프롬프트 규칙 추가
+- 응답 안정성을 위해 OpenAI 호출 temperature를 낮게 설정
 - `.env`를 통한 API Key/모델 관리
 - CORS 허용 설정 포함
 - 에러 처리 포함 (입력 오류/AI 응답 파싱 오류/일반 예외)

@@ -17,6 +17,9 @@
 - `POST /analyze` 엔드포인트 구현 완료
 - OpenAI API 연동 완료 (`httpx`로 REST 호출, `.env` 기반 API Key)
 - 응답 JSON 구조 고정
+- 프론트 연동 기준 Request/Response 필드명 고정
+- 짧은 입력에서도 입력 도메인을 벗어나지 않도록 프롬프트 보강
+- placeholder 응답 방지 규칙 추가
 - CORS 허용 설정 완료
 - 기본 에러 처리 포함
 - `README.md`에 실행/테스트 방법 정리 완료
@@ -95,7 +98,13 @@ FastAPI 기본 형식으로 반환됩니다.
 
 ## 5) 프론트팀 공유용 고정 규칙
 
-아래 응답 키는 프론트 구현 기준으로 **고정** 사용 권장:
+아래 요청/응답 키는 프론트 구현 기준으로 **고정** 사용합니다.
+
+Request:
+
+- `idea`
+
+Response:
 
 - `summary`
 - `similar_cases` (배열)
@@ -103,11 +112,22 @@ FastAPI 기본 형식으로 반환됩니다.
 - `differentiation`
 - `mvp`
 
-필드명 변경 시 프론트 파싱 코드도 함께 수정되어야 하므로, 변경 전 팀 합의가 필요합니다.
+필드명 변경 시 프론트 파싱 코드도 함께 수정되어야 하므로, 변경 전 팀 합의가 필요합니다.  
+후속 백엔드 작업에서는 내부 로직, 프롬프트, 에러 처리 개선은 가능하지만 위 API 계약은 유지하는 것을 기본 원칙으로 합니다.
 
 ---
 
-## 6) 로컬 실행 방법
+## 6) 주요 코드 위치
+
+- 서버 진입점/CORS/헬스체크: `app/main.py`
+- `/analyze` 라우터: `app/routes/analyze.py`
+- Request/Response 모델: `app/models/request_models.py`
+- OpenAI REST 호출 및 에러 처리: `app/services/openai_service.py`
+- 분석 프롬프트: `app/prompts/analysis_prompt.py`
+
+---
+
+## 7) 로컬 실행 방법
 
 `backend` 폴더에서:
 
@@ -121,7 +141,7 @@ FastAPI 기본 형식으로 반환됩니다.
 
 ---
 
-## 7) 빠른 테스트 (스모크)
+## 8) 빠른 테스트 (스모크)
 
 정상 케이스:
 
@@ -129,6 +149,12 @@ FastAPI 기본 형식으로 반환됩니다.
 curl -X POST "http://127.0.0.1:8000/analyze" \
   -H "Content-Type: application/json" \
   -d "{\"idea\":\"공모전 아이디어 검증 AI 서비스\"}"
+```
+
+PowerShell:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType "application/json" -Body '{"idea":"공모전 아이디어 검증 AI 서비스"}' | ConvertTo-Json -Depth 5
 ```
 
 실패 케이스 (공백 입력):
@@ -141,17 +167,17 @@ curl -X POST "http://127.0.0.1:8000/analyze" \
 
 ---
 
-## 8) 알려진 한계 / 리스크
+## 9) 알려진 한계 / 리스크
 
 - **MSYS2/MinGW Python + 최신 마이너(예: 3.14)** 로는 `pydantic-core` 등 휠이 없어 `pip install`이 실패할 수 있음 → **python.org Windows CPython 3.12/3.13** 권장 (`README.md` (0)절 참고)
-- OpenAI 응답 품질은 입력 문장에 따라 편차가 있을 수 있음
+- OpenAI 응답 품질은 입력 문장에 따라 편차가 있을 수 있음. 현재는 프롬프트에서 도메인 이탈과 placeholder 응답을 줄이도록 보강한 상태
 - 외부 API(OpenAI) 장애/지연 시 응답 지연 가능
 - 현재는 로깅/모니터링이 최소 수준
 - 현재 에러 메시지는 개발 편의 중심 (운영 시 메시지 정제 필요)
 
 ---
 
-## 9) 다음 백엔드 담당자 우선 TODO
+## 10) 다음 백엔드 담당자 우선 TODO
 
 1. 프론트와 실제 연동 후 CORS `allow_origins`를 실제 도메인으로 제한
 2. 타임아웃/재시도 정책 정리 (OpenAI 요청 안정화)
@@ -161,15 +187,16 @@ curl -X POST "http://127.0.0.1:8000/analyze" \
 
 ---
 
-## 10) 변경 시 주의사항
+## 11) 변경 시 주의사항
 
 - MVP 목적상 구조를 단순하게 유지하는 것이 우선입니다.
 - 로그인/DB/JWT/Redis/RAG 등 범위 외 기능은 별도 합의 후 진행 권장.
 - 프론트 연동 직전에는 반드시 API 응답 필드 호환성을 다시 확인하세요.
+- `summary`, `similar_cases`, `target_users`, `differentiation`, `mvp` 필드명은 프론트 연동 기준이므로 임의 변경하지 마세요.
 
 ---
 
-## 11) 인수인계 마무리 체크리스트
+## 12) 인수인계 마무리 체크리스트
 
 1. `.env`에 실제 키가 없는지 확인 (`your_openai_api_key_here` 상태 유지)
 2. `.gitignore`에 `.env`, `.venv`가 포함되어 있는지 확인
