@@ -14,6 +14,7 @@ Even if the idea is short, infer a practical business concept from it and provid
 specific, useful analysis. Do not answer that more explanation is needed.
 Your analysis must stay directly grounded in the user's exact idea and industry.
 Do not change the idea into another domain.
+The first sentence of summary must restate the user's idea in concrete terms.
 
 User idea:
 \"\"\"{idea}\"\"\"
@@ -46,4 +47,9 @@ Rules:
     about content or commerce recommendation.
 11) If the idea is "비대면 약 처방 앱", analyze it as a telemedicine/prescription
     service, not as a recommendation platform.
+12) If the idea is about crowd density, safety, accident prevention, CCTV, sensors,
+    public venues, events, or disaster response, analyze it as a public safety or
+    crowd management service, not as healthcare, content recommendation, or commerce.
+13) Before returning the JSON, check that the answer is still about the user's
+    original idea. If it changed domains, rewrite it before returning.
 """.strip()

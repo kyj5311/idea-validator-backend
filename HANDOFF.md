@@ -154,8 +154,13 @@ curl -X POST "http://127.0.0.1:8000/analyze" \
 PowerShell:
 
 ```powershell
-Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType "application/json" -Body '{"idea":"공모전 아이디어 검증 AI 서비스"}' | ConvertTo-Json -Depth 5
+$bodyObject = @{ idea = "공모전 아이디어 검증 AI 서비스" }
+$jsonBody = $bodyObject | ConvertTo-Json -Compress
+$utf8Body = [System.Text.Encoding]::UTF8.GetBytes($jsonBody)
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType "application/json; charset=utf-8" -Body $utf8Body | ConvertTo-Json -Depth 5
 ```
+
+Windows PowerShell에서 한글 JSON을 문자열 그대로 `-Body`에 넣으면 인코딩 문제로 입력이 깨질 수 있으므로, 한글 아이디어 테스트는 UTF-8 바이트로 보내는 방식을 권장합니다.
 
 실패 케이스 (공백 입력):
 
@@ -228,7 +233,10 @@ Application startup complete
 6. API 테스트
 
 ```powershell
-Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType "application/json" -Body '{"idea":"바퀴가 3개인 자동차"}' | ConvertTo-Json -Depth 5
+$bodyObject = @{ idea = "바퀴가 3개인 자동차" }
+$jsonBody = $bodyObject | ConvertTo-Json -Compress
+$utf8Body = [System.Text.Encoding]::UTF8.GetBytes($jsonBody)
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType "application/json; charset=utf-8" -Body $utf8Body | ConvertTo-Json -Depth 5
 ```
 
 7. 성공 기준
@@ -252,6 +260,7 @@ Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType
 | `Could not connect to server` | uvicorn 서버가 실행되지 않았거나 종료됨 | 서버 실행 터미널에서 `uvicorn` 로그 확인 |
 | `OPENAI_API_KEY is not set` | `.env`가 없거나 키 이름이 틀림 | `.env.example`을 복사해 `.env` 생성 후 `OPENAI_API_KEY` 입력 |
 | `pip install` 실패 | MSYS2/MinGW Python 또는 지원되지 않는 Python 버전 사용 | python.org CPython 3.12/3.13으로 가상환경 재생성 |
+| 한글 입력 시 엉뚱한 도메인으로 분석됨 | PowerShell 요청 본문 인코딩 문제 가능 | PowerShell 테스트는 UTF-8 바이트 방식으로 전송 |
 
 ---
 

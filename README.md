@@ -120,8 +120,13 @@ uvicorn app.main:app --reload
 PowerShell 테스트 예시:
 
 ```powershell
-Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType "application/json" -Body '{"idea":"공모전 아이디어 검증 AI 서비스"}' | ConvertTo-Json -Depth 5
+$bodyObject = @{ idea = "공모전 아이디어 검증 AI 서비스" }
+$jsonBody = $bodyObject | ConvertTo-Json -Compress
+$utf8Body = [System.Text.Encoding]::UTF8.GetBytes($jsonBody)
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/analyze" -ContentType "application/json; charset=utf-8" -Body $utf8Body | ConvertTo-Json -Depth 5
 ```
+
+Windows PowerShell에서 한글 JSON을 문자열 그대로 `-Body`에 넣으면 인코딩 문제로 서버가 입력을 다르게 해석할 수 있습니다. 한글 아이디어 테스트는 위처럼 UTF-8 바이트로 보내는 방식을 권장합니다.
 
 에러 응답은 FastAPI 기본 형식으로 반환됩니다.
 
